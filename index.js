@@ -5,7 +5,7 @@ import http from 'http';
 import dotenv from 'dotenv';
 import loginRoutes from './src/routes/login.routes.js';
 import seguridadRoutes from './src/routes/seguridad.routes.js';
-import ventaRoutes from './src/routes/venta.routes.js';
+import juegoRoutes from './src/routes/juego.routes.js';
 import logger from './src/middlewares/logReq.js';
 import {errorHandler as error} from './src/middlewares/errorHandler.js';
 import {tokenAuth} from './src/middlewares/seguridadToken.js';
@@ -28,7 +28,7 @@ app.use("/uploads", express.static(path.resolve("src/uploads")));
 //ROUTES
 app.use(loginRoutes);
 app.use(seguridadRoutes);
-app.use(ventaRoutes);
+app.use(juegoRoutes);
 
 app.use(error)
 

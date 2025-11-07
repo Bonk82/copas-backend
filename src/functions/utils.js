@@ -35,9 +35,7 @@ const armarCRUD = (campos, esquema, tabla) => {
           BEGIN
               if (operacion='I') then
                   insert into ${esquema}.${tabla}(#CAMPOS_INSERT#)
-                  values (#VALORES_INSERT#) RETURNING ${
-                    campos[0].campo
-                  } INTO id;  
+                  values (#VALORES_INSERT#,1) RETURNING ${campos[0].campo} INTO id;  
 
                   select concat_ws('|','REGISTRO INSERTADO CORRECTAMENTE' ,id) into message;
               end if;
@@ -75,8 +73,8 @@ const armarCRUD = (campos, esquema, tabla) => {
       ;
 
       `;
-    let campos_in = campos.filter(f=> f.campo != 'activo');
-    let pa_insert = campos.filter(f=> f.campo != 'activo');
+    let campos_in = campos.slice(1,-1);
+    let pa_insert = campos.slice(0,-1);
     // campos_in.push(dts.filter(f=>f.campo == 'usuario_registro')[0])
     let parametros = "";
     pa_insert.forEach((e) => {
@@ -97,18 +95,18 @@ const armarCRUD = (campos, esquema, tabla) => {
     });
 
     let valores_update = "";
-    campos_in.forEach((e) => {
-      valores_update += `${e.campo} = ${
-        ["character varying", "text"].includes(e.tipo) ? "UPPER(" : ""
-      } _${e.campo} ${
-        ["character varying", "text"].includes(e.tipo) ? ")" : ""
-      },
-          `;
+    campos_in.forEach((e,i) => {
+      if(i == campos_in.length -1 ){
+        valores_update += `${e.campo} = ${["character varying", "text"].includes(e.tipo) ? "UPPER(" : ""} _${e.campo} ${        ["character varying", "text"].includes(e.tipo) ? ")" : ""}`
+      } else{
+        valores_update += `${e.campo} = ${["character varying", "text"].includes(e.tipo) ? "UPPER(" : ""} _${e.campo} ${        ["character varying", "text"].includes(e.tipo) ? ")" : ""},
+        `;
+      }
     });
 
-    plantilla = plantilla.replace("#CAMPOS_IN#", parametros);
+    plantilla = plantilla.replace("#CAMPOS_IN#", parametros.slice(0, -2));
     plantilla = plantilla.replace("#CAMPOS_INSERT#", campos_insert);
-    plantilla = plantilla.replace("#VALORES_INSERT#", valores_insert);
+    plantilla = plantilla.replace("#VALORES_INSERT#", valores_insert.slice(0, -2));
     plantilla = plantilla.replace("#CAMPOS_UPDATE#", valores_update);
 
     try {
@@ -116,7 +114,7 @@ const armarCRUD = (campos, esquema, tabla) => {
       console.log("se creo todo bien", plantilla);
       armado = {
         template: plantilla,
-        message: "Funcion CRUD creada Satisfactoriamente",
+        message: `Funcion ${esquema}.pra_crud_${tabla} creada Satisfactoriamente`,
       };
       resolve(armado);
     } catch (error) {

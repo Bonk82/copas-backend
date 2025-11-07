@@ -7,6 +7,5 @@ const router = Router();
 /**********LOGIN*/
 router.get('/login/', login.login)
 router.get('/generarcrud/', utils.generarCRUDPostgres)
-router.get('/controlUsuario/', login.controlUsuario)
 
 export default router;
