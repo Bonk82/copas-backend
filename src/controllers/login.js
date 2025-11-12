@@ -1,15 +1,41 @@
 import {consulta as da} from '../connection/connexPostgres.js'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
+import {OAuth2Client} from 'google-auth-library';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const login = async (datos, respuesta, next) => {
   const {operacion,user,pass,new_pass} = datos.query
 
-  let hash = pass ? crypto.createHash('sha256').update(pass).digest('hex') : null;
+  if (operacion === 'G' && !pass) return respuesta.status(400).json({error: 'datos incompletos'});
+
+  if(operacion === 'G' && user && pass){
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: pass,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+    } catch (e) {
+      return res.status(401).json({ error: 'Token de Google inválido' });
+    }
+
+    const payload = ticket.getPayload();
+    const googleId = payload.sub;
+    const email = payload.email;
+    const name = payload.name;
+    const picture = payload.picture;
+
+    user = `${email}|${name}|${picture}`;
+    pass = googleId;
+  }
+
+  let hash = pass && operacion !='G'? crypto.createHash('sha256').update(pass).digest('hex') : null;
   let new_hash = new_pass ? crypto.createHash('sha256').update(new_pass).digest('hex') : null;
 
   const ip = datos.headers['x-forwarded-for'] || datos.socket.remoteAddress || null;
-  let q =`select * from seguridad.pr_login ('${operacion}','${user}','${hash}','${new_hash}','${ip}');`;
+  let q =`select * from seguridad.pr_login ('${operacion}','${user}','${hash || pass}','${new_hash}','${ip}');`;
   let newToken = null;
   // let ip = null;
   try {
