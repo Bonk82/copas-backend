@@ -6,7 +6,7 @@ import {OAuth2Client} from 'google-auth-library';
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const login = async (datos, respuesta, next) => {
-  const {operacion,user,pass,new_pass} = datos.query
+  let {operacion,user,pass,new_pass} = datos.query
 
   if (operacion === 'G' && !pass) return respuesta.status(400).json({error: 'datos incompletos'});
 
@@ -14,13 +14,13 @@ export const login = async (datos, respuesta, next) => {
     let ticket;
     try {
       ticket = await googleClient.verifyIdToken({
-        idToken: pass,
+        idToken: user,
         audience: process.env.GOOGLE_CLIENT_ID
       });
     } catch (e) {
       return res.status(401).json({ error: 'Token de Google inválido' });
     }
-
+    console.log("ticket", ticket);
     const payload = ticket.getPayload();
     const googleId = payload.sub;
     const email = payload.email;
