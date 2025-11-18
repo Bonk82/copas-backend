@@ -31,11 +31,11 @@ export const crudUsuario   = async  (datos, respuesta, next) => {
   let {operacion,id_usuario,nombre,cuenta,pass,tipo_acceso,datos_cuenta,fid_rol,estado,fecha_registro,activo} = datos.query;
 
   try {
-    if(!nombre || !cuenta || (!pass && !datos_cuenta)) throw new Error("Faltan datos obligatorios");
+    if(!nombre || !cuenta || !pass) throw new Error("Faltan datos obligatorios");
     let hash = null
     if(pass && ['I','CP'].includes(operacion)) hash = crypto.createHash('sha256').update(pass).digest('hex');
 
-    let q = `select * from seguridad.pra_crud_usuario('${operacion}',${id_usuario},'${nombre}','${cuenta}','${hash}','${tipo_acceso}','${datos_cuenta}',${fid_rol},'${estado}');`;
+    let q = `select * from seguridad.pra_crud_usuario('${operacion}',${id_usuario},'${nombre}','${cuenta}','${hash}','${tipo_acceso}','${datos_cuenta}',${fid_rol || 1},'${estado}');`;
 
     const mod = q.replace(/undefined/gi,`null`).replace(/'null'/gi,`null`).replace(/''/g,`null`).replace(/,,/g,`,null,`);
 
