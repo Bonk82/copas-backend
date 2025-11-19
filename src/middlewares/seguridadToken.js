@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const tokenAuth = (req, res, next)=> {
-  const regex = /(login|signup|message|generarcrud)/;
+  const regex = /(login|signup|message|generarcrud|signUp)/;
   if(regex.test(req.url)){
     next();
     return false;
@@ -15,10 +15,10 @@ export const tokenAuth = (req, res, next)=> {
   }
   if (token) {
     jwt.verify(token, process.env.TOKEN_PWD, (err, decoded) => {
-      if (err) return res.status(403).json([{ message: 'Token Inválido',type:'error' }]);
+      if (err) return res.status(403).json({ message: 'Token Inválido',type:'error' });
       next();
     });
   } else {
-    res.status(401).json([{ message: 'Token Perdido',type:'error' }]);
+    res.status(401).json({ message: 'Token Perdido',type:'error' });
   }
 }

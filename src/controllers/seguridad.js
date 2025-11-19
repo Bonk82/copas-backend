@@ -1,5 +1,5 @@
 
-import * as da from '../connection/connexPostgres.js'
+import {consulta as da} from '../connection/connexPostgres.js'
 import crypto from 'crypto'
 
 
@@ -7,20 +7,15 @@ import crypto from 'crypto'
 export const listarUsuarios  = async  (datos, respuesta, next) => {
   const {opcion,id} = datos.query
   let q = ''
-  if(opcion == 'T') q = `select u.*,r.nombre rol,s.nombre sucursal
-    from seguridad.usuario u
+  if(opcion == 'T') q = `select u.*,r.nombre rol from seguridad.usuario u
     left join seguridad.rol r on r.id_rol =u.fid_rol
-    left join seguridad.sucursal s on s.id_sucursal  = u.fid_sucursal
     order by u.cuenta`;
-  if(opcion != 'T') q = `select u.*,r.nombre rol,s.nombre sucursal
-    from seguridad.usuario u
+  if(opcion != 'T') q = `select u.*,r.nombre rol from seguridad.usuario u
     left join seguridad.rol r on r.id_rol =u.fid_rol
-    left join seguridad.sucursal s on s.id_sucursal  = u.fid_sucursal
     order by u.cuenta where ${opcion} = '${id}' order by u.cuenta;`;
-  if(opcion == 'AA') q = `select u.id_usuario,u.cuenta,u.ci,u.fecha_nacimiento,u.telefonos,u.estado,u.fid_rol from seguridad.usuario u where (u.estado = 'ALTA' and u.fid_rol in(1,2,3,4)) or (u.estado = 'ASIGNADO' and u.fid_sucursal = ${id}) order by u.cuenta;`;
 
   try {
-    const consulta = await da.consulta(q);
+    const consulta = await da(q);
     respuesta.status(200).json(consulta);
   } catch (error) {
     next(error)
@@ -28,7 +23,7 @@ export const listarUsuarios  = async  (datos, respuesta, next) => {
 };
 
 export const crudUsuario   = async  (datos, respuesta, next) => {
-  let {operacion,id_usuario,nombre,cuenta,pass,tipo_acceso,datos_cuenta,fid_rol,estado,fecha_registro,activo} = datos.query;
+  let {operacion,id_usuario,nombre,cuenta,pass,tipo_acceso,datos_cuenta,fid_rol,estado} = datos.query;
 
   try {
     if(!nombre || !cuenta || !pass) throw new Error("Faltan datos obligatorios");
@@ -39,7 +34,7 @@ export const crudUsuario   = async  (datos, respuesta, next) => {
 
     const mod = q.replace(/undefined/gi,`null`).replace(/'null'/gi,`null`).replace(/''/g,`null`).replace(/,,/g,`,null,`);
 
-    const consulta = await da.consulta(mod);
+    const consulta = await da(mod);
     respuesta.status(200).json(consulta);
   } catch (error) {
     next(error)
@@ -54,7 +49,7 @@ export const listarClasificador  = async  (datos, respuesta, next) => {
   if(opcion != 'T') q = `select * from seguridad.clasificador c where c.activo = 1 and ${opcion} = '${id}';`;
 
   try {
-    const consulta = await da.consulta(q);
+    const consulta = await da(q);
     respuesta.status(200).json(consulta);
   } catch (error) {
     next(error)
@@ -69,7 +64,7 @@ export const crudClasificador   = async  (datos, respuesta, next) => {
   const mod = q.replace(/undefined/gi,`null`).replace(/'null'/gi,`null`).replace(/''/g,`null`).replace(/,,/g,`,null,`);
 
   try {
-    const consulta = await da.consulta(mod);
+    const consulta = await da(mod);
     respuesta.status(200).json(consulta);
   } catch (error) {
     next(error)
@@ -86,7 +81,7 @@ export const listarMenu = async  (datos, respuesta, next) => {
       join seguridad.menu m on rm.fid_menu = m.id_menu where rm.fid_rol =${id};`;
 
   try {
-    const consulta = await da.consulta(q);
+    const consulta = await da(q);
     respuesta.status(200).json(consulta);
   } catch (error) {
     next(error)
@@ -101,7 +96,7 @@ export const listarRoles  = async  (datos, respuesta, next) => {
   if(opcion != 'T') q = `select * from seguridad.rol r where ${opcion} = '${id}';`;
 
   try {
-    const consulta = await da.consulta(q);
+    const consulta = await da(q);
     respuesta.status(200).json(consulta);
   } catch (error) {
     next(error)
