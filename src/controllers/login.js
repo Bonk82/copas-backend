@@ -43,7 +43,7 @@ export const login = async (datos, respuesta, next) => {
     const consulta = await da(q);
     console.log("del login", consulta);
     if(consulta[0]){
-      newToken = jwt.sign({ exp: Math.floor(Date.now() / 1000) + (60*60*8),cnx: consulta[0].id_con,id_rol: consulta[0].id_rol,id_usuario: consulta[0].id_usuario,cuenta:user, rol:consulta[0].rol,usuario:consulta[0].usuario}, process.env.TOKEN_PWD);
+      newToken = jwt.sign({ exp: Math.floor(Date.now() / 1000) + (60*60*8),cnx: consulta[0].id_con,id_rol: consulta[0].id_rol,id_usuario: consulta[0].id_usuario,cuenta:user, rol:consulta[0].rol,usuario:consulta[0].usuario,avatar:consulta[0].extra?.split('|')[2]}, process.env.TOKEN_PWD);
     }else{
       return respuesta.status(401).json({message: 'Usuario o contraseña incorrectos'});
     }
